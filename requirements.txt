@@ -1,0 +1,13 @@
+pandas
+numpy
+seaborn
+
+
+
+azureml-core
+azureml-dataprep
+azureml-train
+azureml-train-automl
+azureml-widgets
+azureml-dataset-runtime
+azureml-mlflow
