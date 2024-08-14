@@ -3,7 +3,7 @@ import sys
 import warnings
 from dataclasses import dataclass
 
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
@@ -77,10 +77,6 @@ class ModelTrainer:
                     'max_depth': [3, 5, 7]
                 }
             }
-
-            # Add a Voting Classifier with all the models
-            voting_clf = VotingClassifier(estimators=[(name, model) for name, model in models.items()], voting='soft')
-            models["Voting Classifier"] = voting_clf
 
             model_report: dict = evaluate_models(
                 X_train=X_train,
