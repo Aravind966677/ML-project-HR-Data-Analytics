@@ -47,9 +47,4 @@ The Employee Attrition Prediction project is designed to predict the likelihood 
   - `/` (Home Page): Displays the main form.
   - `/predict_datapoint`: Handles form submission and displays prediction results.
 
-## How to Run the Project
 
-1. **Install Dependencies**:
-   Install the necessary Python packages using:
-   ```bash
-   pip install -r requirements.txt
