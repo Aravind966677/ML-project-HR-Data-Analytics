@@ -25,10 +25,10 @@ class DataTransformation:
         This function is responsible for creating the data transformation pipeline.
         '''
         try:
-            numerical_columns = ['satisfaction_level', 'last_evaluation', 'number_project', 
+            self.numerical_columns = ['satisfaction_level', 'last_evaluation', 'number_project', 
                                   'average_monthly_hours', 'tenure', 'work_accident', 
                                   'promotion_last_5years']
-            categorical_columns = ['department', 'salary']
+            self.categorical_columns = ['department', 'salary']
 
             num_pipeline = Pipeline(
                 steps=[
@@ -40,18 +40,17 @@ class DataTransformation:
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="most_frequent")),
-                    ("one_hot_encoder", OneHotEncoder()),
-                    ("scaler", StandardScaler(with_mean=False))
+                    ("one_hot_encoder", OneHotEncoder(drop='first'))  # Use drop='first' to avoid multicollinearity
                 ]
             )
 
-            logging.info(f"Categorical columns: {categorical_columns}")
-            logging.info(f"Numerical columns: {numerical_columns}")
+            logging.info(f"Categorical columns: {self.categorical_columns}")
+            logging.info(f"Numerical columns: {self.numerical_columns}")
 
             preprocessor = ColumnTransformer(
                 transformers=[
-                    ("num_pipeline", num_pipeline, numerical_columns),
-                    ("cat_pipeline", cat_pipeline, categorical_columns)
+                    ("num_pipeline", num_pipeline, self.numerical_columns),
+                    ("cat_pipeline", cat_pipeline, self.categorical_columns)
                 ]
             )
 
@@ -75,9 +74,6 @@ class DataTransformation:
             preprocessing_obj = self.get_data_transformer_object()
 
             target_column_name = "left"
-            numerical_columns = ['satisfaction_level', 'last_evaluation', 'number_project',
-                                  'average_monthly_hours', 'tenure', 'work_accident', 
-                                  'promotion_last_5years']
 
             input_feature_train_df = train_df.drop(columns=[target_column_name], axis=1)
             target_feature_train_df = train_df[target_column_name]
@@ -87,11 +83,25 @@ class DataTransformation:
 
             logging.info("Applying preprocessing object on training dataframe and testing dataframe.")
 
+            # Transform input features
             input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
             input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
 
+            # Combine transformed features with target variable
             train_arr = np.c_[input_feature_train_arr, np.array(target_feature_train_df)]
             test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
+
+            # Extract and print column names from one-hot encoding
+            cat_pipeline = preprocessing_obj.named_transformers_['cat_pipeline']
+            one_hot_encoder = cat_pipeline.named_steps['one_hot_encoder']
+            cat_feature_names = one_hot_encoder.get_feature_names_out(self.categorical_columns)
+
+            all_feature_names = self.numerical_columns + list(cat_feature_names) + [target_column_name]
+            logging.info(f"Feature names after encoding: {all_feature_names}")
+
+            # Optionally, print or save feature names to a file for inspection
+            feature_names_df = pd.DataFrame(columns=all_feature_names)
+            logging.info(f"Feature names DataFrame:\n{feature_names_df.head()}")
 
             logging.info(f"Saved preprocessing object.")
 
@@ -104,6 +114,15 @@ class DataTransformation:
                 train_arr,
                 test_arr,
                 self.data_transformation_config.preprocessor_obj_file_path,
+                all_feature_names
             )
         except Exception as e:
             raise CustomException(e, sys)
+
+if __name__ == "__main__":
+    data_transformation = DataTransformation()
+    train_arr, test_arr, preprocessor_path, feature_names = data_transformation.initiate_data_transformation(
+        "path_to_train.csv", 
+        "path_to_test.csv"
+    )
+    print(f"Feature names after encoding: {feature_names}")

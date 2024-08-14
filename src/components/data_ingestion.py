@@ -12,6 +12,10 @@ from src.logger import logging
 
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
+
+from src.components.model_trainer import ModelTrainerConfig
+from src.components.model_trainer import ModelTrainer
+
 @dataclass
 class DataIngestionConfig:
     train_data_path: str = os.path.join('artifacts', "train.csv")
@@ -21,6 +25,20 @@ class DataIngestionConfig:
 class DataIngestion:
     def __init__(self):
         self.ingestion_config = DataIngestionConfig()
+
+    def remove_outliers_iqr(self, df, column):
+        # Calculate Q1 (25th percentile) and Q3 (75th percentile)
+        Q1 = df[column].quantile(0.25)
+        Q3 = df[column].quantile(0.75)
+        IQR = Q3 - Q1
+        
+        # Define the range for outliers
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        
+        # Remove outliers
+        df = df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+        return df
 
     def initiate_data_ingestion(self):
         logging.info("Entered the data ingestion method or component")
@@ -47,6 +65,9 @@ class DataIngestion:
             total_duplicates_after = df.duplicated().sum()
             logging.info(f"Total duplicates after removal: {total_duplicates_after}")
 
+            # Remove outliers in 'tenure' column
+            df = self.remove_outliers_iqr(df, 'tenure')
+
             # Save the raw DataFrame with updated columns and duplicates removed
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
             df.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
@@ -67,9 +88,13 @@ class DataIngestion:
             raise CustomException(e, sys)
         
         
-if __name__=="__main__":
-    obj=DataIngestion()
-    train_data,test_data=obj.initiate_data_ingestion()
-    
-    data_transformation=DataTransformation()
-    data_transformation.initiate_data_transformation(train_data,test_data)
+if __name__ == "__main__":
+    obj = DataIngestion()
+    train_data, test_data = obj.initiate_data_ingestion()
+
+    data_transformation = DataTransformation()
+    train_arr, test_arr, preprocessor_path, feature_names = data_transformation.initiate_data_transformation(train_data, test_data)
+
+    modeltrainer = ModelTrainer()
+    accuracy = modeltrainer.initiate_model_trainer(train_arr, test_arr)
+    print(f"Model Accuracy: {accuracy}")

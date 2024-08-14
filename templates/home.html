@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Attrition Prediction</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Employee Attrition Prediction</h1>
+        
+        <form action="{{ url_for('predict_datapoint') }}" method="post">
+            <h2>
+                <legend>Employee Attrition Prediction Form</legend>
+            </h2>
+            <div class="mb-3">
+                <label class="form-label">Satisfaction Level</label>
+                <input class="form-control" type="number" name="satisfaction_level" step="0.01" placeholder="Enter Satisfaction Level (0 to 1)" min="0" max="1" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Last Evaluation</label>
+                <input class="form-control" type="number" name="last_evaluation" step="0.01" placeholder="Enter Last Evaluation (0 to 1)" min="0" max="1" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Number of Projects</label>
+                <input class="form-control" type="number" name="number_project" placeholder="Enter Number of Projects" min="1" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Average Monthly Hours</label>
+                <input class="form-control" type="number" name="average_monthly_hours" placeholder="Enter Average Monthly Hours" min="0" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tenure (in years)</label>
+                <input class="form-control" type="number" name="tenure" step="0.1" placeholder="Enter Tenure (in years)" min="0" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Work Accident</label>
+                <select class="form-control" name="work_accident" required>
+                    <option value="0">0 (No)</option>
+                    <option value="1">1 (Yes)</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Promotion in Last 5 Years</label>
+                <select class="form-control" name="promotion_last_5years" required>
+                    <option value="0">0 (No)</option>
+                    <option value="1">1 (Yes)</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Department</label>
+                <select class="form-control" name="department" required>
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="sales">Sales</option>
+                    <option value="accounting">Accounting</option>
+                    <option value="hr">HR</option>
+                    <option value="technical">Technical</option>
+                    <option value="support">Support</option>
+                    <option value="management">Management</option>
+                    <option value="IT">IT</option>
+                    <option value="product_mng">Product Management</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="RandD">R&D</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Salary</label>
+                <select class="form-control" name="salary" required>
+                    <option value="" disabled selected>Select Salary</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <input class="btn btn-primary" type="submit" value="Predict Attrition" />
+            </div>
+        </form>
+        
+        {% if results is not none %}
+            <h2>The prediction is: {{ results }}</h2>
+        {% else %}
+            <h2>No results available</h2>
+        {% endif %}
+    </div>
+</body>
+</html>
